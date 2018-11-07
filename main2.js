@@ -92,8 +92,6 @@ function deleteNums(e){
                 cell.classList.add('deleted');
                 turns.push(item.id);
             }
-            turnsArr.push(turns);
-            console.log(turnsArr)
             counter +=1;
         }
         //прорисовка DOM происходит после каждого 10 удаления. число можно сделать регулируемым
@@ -109,7 +107,10 @@ function deleteNums(e){
         } else {
             for(let item of Rows) {
                 actualArr = actualArr.concat(item);
+                reserveArr = actualArr;
             }
+
+            console.log('turnsArr after 10 turns', turnsArr);
             render(actualArr);
 
             counter = 0;
@@ -134,20 +135,20 @@ function madeRows(arr) {
     let rows = [],
       len = arr.length;
 
-    // while (len > 0) {
-    //     var row = arr.splice(0, 9);
-    //     if(!row.every(item=>item===0)) {
-    //         rows.push(row);
-    //     }
-    //     len -= 9;
-    // }
-
-    for(let i = 0; i < arr.length; i+=9) {
-        var row = arr.slice(i, i+9);
+    while (len > 0) {
+        var row = arr.splice(0, 9);
         if(!row.every(item=>item===0)) {
             rows.push(row);
         }
+        len -= 9;
     }
+
+    // for(let i = 0; i < arr.length; i+=9) {
+    //     var row = arr.slice(i, i+9);
+    //     if(!row.every(item=>item===0)) {
+    //         rows.push(row);
+    //     }
+    // }
     return rows;
 }
 

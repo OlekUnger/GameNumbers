@@ -81,6 +81,8 @@ body {
 
 .buttons {
     width: 100px;
+    display: flex;
+
 }
 
 .btn {
@@ -89,14 +91,22 @@ body {
     padding: 0 20px;
     height: 40px;
     line-height: 20px;
-    /*border-radius: 10px;*/
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     background: rgba(0,0,0, 0.3);
     box-shadow: 0 0 10px rgba(0,0,0,0.5) inset;
     color: #ecebeb;
+    flex-grow: 1;
+    border-radius: 3px;
 }
 
-.btn:hover{
+.btn:not(:last-child) {
+    margin-right: 3px;
+}
+
+.btn:not([disabled = 'disabled']):hover{
     box-shadow: 0 -2px 0 white inset;
 }
 
@@ -106,6 +116,11 @@ body {
     margin-bottom: 10px;
     display: flex;
     padding: 0 20px;
+}
+
+.icon {
+    width: 16px;
+    height: 16px;
 }
 
 
