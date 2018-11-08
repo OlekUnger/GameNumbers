@@ -3,25 +3,41 @@ let field = document.querySelector('.field'),
     playField = document.getElementById('playField'),
     btnAdd = document.getElementById('btnAdd'),
     btnRestart = document.getElementById('btnRestart'),
-    btnBack = document.getElementById('btnBack');
+    btnBack = document.getElementById('btnBack'),
+    btnHint = document.getElementById('btnHint');
 
 const initialArr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 1, 1, 2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1, 8, 1, 9];
 // const initialArr = [2,0,4,5,6,7,0,0,9,1,0,0,1,3,0,0,0,5,0,0,0,7,1,0,0,0,0,3,0,0,0,0,0,0,0,4,5,0,0,0,0,1,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,1,0,0,3,4,5,0,0,0,0,0,0,1,3,4,5,0,0,0,0,6,7,1,1,8,2,4,5,6,7,1,3,5,7,1,3,4,5,1,3,5,1,3,4,5,1,3,4,5,6,7,1,8];
 let counter = 0;
 let actualArr = [].concat(initialArr);
-let reserveArr = [];
 let Rows = [];
-let turns = [];
+let turnsArr = [];
 let removed = [];
+let map = new Map();
 createNew();
 
 // if(!turns.length) btnBack.setAttribute('disabled', 'disabled');
 // if(!turns.length) btnBack.setAttribute('disabled', 'disabled');
 
-function render(arr){
-    // Rows = [];
+
+field.addEventListener('click', (e) => {
+    deleteNums(e);
+});
+
+btnAdd.addEventListener('click', addRows);
+btnRestart.addEventListener('click', createNew);
+btnBack.addEventListener('click', () => {
+    if (!turnsArr.length) return;
+    stepBack(turnsArr);
+});
+btnHint.addEventListener('click', getHint);
+
+function getHint() {
+    console.log('Hind')
+}
+
+function render(arr) {
     Rows = madeRows(arr);
-    reserveArr  = madeRows(arr);
 
     field.innerHTML = '';
     let fragmentRows = document.createDocumentFragment();
@@ -37,7 +53,7 @@ function render(arr){
 
             cell.classList.add('cell');
             cell.setAttribute('id', `${i}.${j}.${Rows[i][j]}`);
-            if(Rows[i][j] === 0) cell.classList.add('deleted');
+            if (Rows[i][j] === 0) cell.classList.add('deleted');
             cell.innerHTML = Rows[i][j];
 
             fragmentCells.appendChild(cell);
@@ -50,83 +66,71 @@ function render(arr){
     fragmentRows = null;
 }
 
-field.addEventListener('click',(e)=>{
-    deleteNums(e);
-});
+function deleteNums(e) {
+    if (!e.target.classList.contains('cell')) return;
+    if (e.target.classList.contains('deleted')) return;
 
-btnAdd.addEventListener('click', addRows);
-btnRestart.addEventListener('click', createNew);
-btnBack.addEventListener('click', ()=>{
-    if(!turns.length) return;
-    getBack(turns);
-    // console.log(turns)
-})
-
-function deleteNums(e){
     let id = e.target.id,
-        rend = false,
-        [row, ind, value] = id.split('.').map(item=>parseInt(item));
+        [row, ind, value] = id.split('.').map(item => parseInt(item));
 
-    if(e.target.classList.contains('deleted')) return;
+
     removed.push({id, row, ind, value});
     e.target.classList.add('gray');
+
+    // removed.push( map.get(e.target.id));
+    // e.target.classList.add('gray');
 
     if (removed.length > 2) {
         removed = removed.splice(2, 1);
     }
 
     if (removed.length === 2) {
-        if(removed[0].id === removed[1].id) {
-            removed.splice(1,1);
+        if (removed[0].id === removed[1].id) {
+            removed.splice(1, 1);
             return;
         }
-        if(removed[0].row >= removed[1].row && removed[0].ind > removed[1].ind) {
+        if (removed[0].row >= removed[1].row && removed[0].ind > removed[1].ind) {
             removed.reverse();
         }
-        if(removed[0].row > removed[1].row){
+        if (removed[0].row > removed[1].row) {
             removed.reverse();
         }
 
         let valid = validate(removed);
-        console.log('valid ',valid);
 
-        if(valid){
-            turns = [];
-            for(let item of removed){
-                Rows[item.row][item.ind] = 0;
+        if (valid) {
+            for (let item of removed) {
                 let cell = document.getElementById(item.id);
+
                 cell.classList.add('deleted');
+                Rows[item.row][item.ind] = 0;
             }
-            turns = removed;
-            counter +=1;
+            turnsArr.push(removed);
+            counter += 1;
         }
 
-        for(let item of removed) {
-            document.getElementById(item.id).classList.remove('gray');
+        for (let item of removed) {
             let r = document.getElementById(item.row);
-            if(checkEmptyRow(Rows[item.row])){
-                r.style.display = 'none';
-                rend = true;
-            }
-        }
-        if(rend){
-            for(let item of Rows){
-                // btnBack.setAttribute('disabled', 'disabled');
-                actualArr = actualArr.concat(item);
-                render(actualArr);
+
+            document.getElementById(item.id).classList.remove('gray');
+
+            if (checkEmptyRow(Rows[item.row])) {
+                r.classList.add('hidden');
             }
         }
     }
 }
 
-function addRows(){
+
+function addRows() {
     let arr = [],
         actualArr = [];
 
-    for(let item of Rows) {
+    for (let item of Rows) {
         actualArr = actualArr.concat(item);
-        arr = arr.concat(item.filter(num=>num>0));
+        arr = arr.concat(item.filter(num => num > 0));
     }
+    turnsArr = [];
     actualArr = actualArr.concat(arr);
     render(actualArr);
 }
@@ -136,45 +140,45 @@ function madeRows(arr) {
         len = arr.length;
 
     while (len > 0) {
-        var row = arr.splice(0, 9);
-        if(!row.every(item=>item===0)) {
+        let row = arr.splice(0, 9);
+        if (!row.every(item => item === 0)) {
             rows.push(row);
         }
         len -= 9;
     }
 
-    // for(let i = 0; i < arr.length; i+=9) {
-    //     var row = arr.slice(i, i+9);
-    //     if(!row.every(item=>item===0)) {
-    //         rows.push(row);
-    //     }
-    // }
+    for(let i = 0; i < rows.length; i++){
+        for(let j = 0; j < rows[i].length; j++){
+            let id = `${i}.${j}.${rows[i][j]}`;
+            map.set(id, {id: id, row: i, ind: j, value: rows[i][j]})
+        }
+    }
     return rows;
 }
 
-function getBack(arr){
 
-    let cell1 = document.getElementById(arr[0].id),
-        cell2 = document.getElementById(arr[1].id);
+function stepBack(arr) {
+    let item = arr.pop();
 
-    cell1.classList.remove('deleted');
-    cell2.classList.remove('deleted');
+    for (let i of item) {
+        let cell = document.getElementById(i.id),
+            row = document.getElementById(`${i.row}`);
 
+        cell.classList.remove('deleted');
+        if(row.classList.contains('hidden')) row.classList.remove('hidden');
+        Rows[i.row][i.ind] = i.value;
+    }
 }
 
-function createNew(){
+function createNew() {
     actualArr = [].concat(initialArr);
     render(actualArr);
 }
 
-function checkEmptyRow(r){
-    if(r.every(item=>item===0)) {
+function checkEmptyRow(r) {
+    if (r.every(item => item === 0)) {
         return true;
     }
-}
-
-function returnNums(){
-
 }
 
 function validate(arr) {
@@ -196,7 +200,7 @@ function validate(arr) {
                 valid = true;
             } else {
                 valid = true;
-                for (let i = firstInd+1; i < secondInd; i++) {
+                for (let i = firstInd + 1; i < secondInd; i++) {
                     if (asd[i] !== 0) {
                         valid = false;
                         break;
@@ -223,7 +227,7 @@ function validate(arr) {
                     }
                 }
             } else {
-                let asd = [].concat(Rows[firstRow].slice(firstInd+1, Rows[firstRow].length - firstInd))
+                let asd = [].concat(Rows[firstRow].slice(firstInd + 1, Rows[firstRow].length - firstInd))
                     .concat(Rows[secondRow].slice(0, secondInd));
 
                 if (Math.abs(firstRow - secondRow) > 1) {
