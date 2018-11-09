@@ -1,3 +1,5 @@
+//с использованием массивов
+
 let field = document.querySelector('.field'),
     container = document.getElementById('container'),
     playField = document.getElementById('playField'),
@@ -13,7 +15,7 @@ let actualArr = [].concat(initialArr);
 let Rows = [];
 let turnsArr = [];
 let removed = [];
-let map = new Map();
+let searchMap = [];
 createNew();
 
 // if(!turns.length) btnBack.setAttribute('disabled', 'disabled');
@@ -32,12 +34,9 @@ btnBack.addEventListener('click', () => {
 });
 btnHint.addEventListener('click', getHint);
 
-function getHint() {
-    console.log('Hind')
-}
-
 function render(arr) {
-    Rows = madeRows(arr);
+    Rows = createRows(arr);
+    searchMap = createSearchMap(Rows);
 
     field.innerHTML = '';
     let fragmentRows = document.createDocumentFragment();
@@ -73,12 +72,8 @@ function deleteNums(e) {
     let id = e.target.id,
         [row, ind, value] = id.split('.').map(item => parseInt(item));
 
-
     removed.push({id, row, ind, value});
     e.target.classList.add('gray');
-
-    // removed.push( map.get(e.target.id));
-    // e.target.classList.add('gray');
 
     if (removed.length > 2) {
         removed = removed.splice(2, 1);
@@ -89,10 +84,7 @@ function deleteNums(e) {
             removed.splice(1, 1);
             return;
         }
-        if (removed[0].row >= removed[1].row && removed[0].ind > removed[1].ind) {
-            removed.reverse();
-        }
-        if (removed[0].row > removed[1].row) {
+        if ((removed[0].row >= removed[1].row && removed[0].ind > removed[1].ind) || (removed[0].row > removed[1].row)) {
             removed.reverse();
         }
 
@@ -121,7 +113,6 @@ function deleteNums(e) {
     }
 }
 
-
 function addRows() {
     let arr = [],
         actualArr = [];
@@ -135,7 +126,7 @@ function addRows() {
     render(actualArr);
 }
 
-function madeRows(arr) {
+function createRows(arr) {
     let rows = [],
         len = arr.length;
 
@@ -144,18 +135,23 @@ function madeRows(arr) {
         if (!row.every(item => item === 0)) {
             rows.push(row);
         }
-        len -= 9;
-    }
 
-    for(let i = 0; i < rows.length; i++){
-        for(let j = 0; j < rows[i].length; j++){
-            let id = `${i}.${j}.${rows[i][j]}`;
-            map.set(id, {id: id, row: i, ind: j, value: rows[i][j]})
-        }
+        len -= 9;
     }
     return rows;
 }
 
+function createSearchMap(arr) {
+    let asd = [];
+    for(let i = 0; i < arr.length; i++) {
+        let row = arr[i];
+        for(let j = 0; j < row.length; j++) {
+            let id = `${i}.${j}.${row[j]}`;
+            asd.push({id: id, row: i, ind: j, value: row[j]})
+        }
+    }
+    return asd;
+}
 
 function stepBack(arr) {
     let item = arr.pop();
@@ -181,76 +177,49 @@ function checkEmptyRow(r) {
     }
 }
 
+function getHint() {
+   // let map = createSearchMap(Rows);
+   //
+   // console.log(map);
+
+    let asd = Rows;
+
+    //берем каждую цифру и ищем такую же или в сумме с ней = 10 и проверяем на валидность
+    for(let i = 0; i< Rows.length; i++) {
+        let len = asd[i].length;
+        while(len>0){
+            let [value] = asd[i].splice(0,1);
+            console.log(value);
+            len--;
+        }
+    }
+}
+
 function validate(arr) {
     let valid = false;
 
-    let [first, second] = arr,
-        [, firstRow, firstInd, firstValue] = Array.from(Object.values(first)),
-        [, secondRow, secondInd, secondValue] = Array.from(Object.values(second));
+    let
+        [first, second] = arr,
+        [firstId, firstRow, firstInd, firstValue] = [...Object.values(first)],
+        [secondId, secondRow, secondInd, secondValue] = [...Object.values(second)];
 
-    //если цифры одинаковые
+    // //если цифры одинаковые
     if (firstValue === secondValue || (firstValue + secondValue === 10)) {
+        if(secondInd- firstInd === 1 || (secondInd === firstInd && secondRow - firstRow === 1)) {
+            valid = true;
+        } else {
+            let one = searchMap.findIndex(item=>item.id === firstId),
+                two = searchMap.findIndex(item=>item.id === secondId);
 
-        // // если выбранные цифрв находятся в одной строке
-        if (firstRow === secondRow) {
-
-            let asd = Rows[firstRow];
-            // если цифры рядом
-            if (Math.abs(firstInd - secondInd) === 1) {
-                valid = true;
-            } else {
-                valid = true;
-                for (let i = firstInd + 1; i < secondInd; i++) {
-                    if (asd[i] !== 0) {
-                        valid = false;
-                        break;
-                    }
-                }
-            }
-        }
-        //в разных строках
-        else {
-            // если цифры друг под другом
-            if (firstInd === secondInd) {
-
-                // рядом
-                if (Math.abs(firstRow - secondRow) === 1) {
-                    valid = true;
-                } else {
-                    valid = true;
-                    for (let i = firstRow + 1; i < secondRow; i++) {
-                        let asd = Rows[i][firstInd];
-                        if (asd !== 0) {
-                            valid = false;
-                            break;
-                        }
-                    }
-                }
-            } else {
-                let asd = [].concat(Rows[firstRow].slice(firstInd + 1, Rows[firstRow].length - firstInd))
-                    .concat(Rows[secondRow].slice(0, secondInd));
-
-                if (Math.abs(firstRow - secondRow) > 1) {
-                    valid = true;
-                    for (let i = firstRow + 1; i < secondRow; i++) {
-                        if (Rows[i].some(item => item > 0)) {
-                            valid = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (Math.abs(firstRow - secondRow) === 1) {
-                    if (asd.every(item => item === 0)) {
-                        valid = true;
-                    }
-                }
-            }
-
+            let asd = searchMap.some((item, indx)=>
+                indx > one && indx < two && item.value!== 0
+            );
+            if(asd) valid = true;
         }
     }
 
     return valid;
+
 }
 
 
