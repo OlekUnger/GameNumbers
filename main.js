@@ -9,13 +9,13 @@ let field = document.querySelector('.field'),
     btnHint = document.getElementById('btnHint');
 
 const initialArr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 1, 1, 2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1, 8, 1, 9];
-// const initialArr = [2,0,4,5,6,7,0,0,9,1,0,0,1,3,0,0,0,5,0,0,0,7,1,0,0,0,0,3,0,0,0,0,0,0,0,4,5,0,0,0,0,1,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,1,0,0,3,4,5,0,0,0,0,0,0,1,3,4,5,0,0,0,0,6,7,1,1,8,2,4,5,6,7,1,3,5,7,1,3,4,5,1,3,5,1,3,4,5,1,3,4,5,6,7,1,8];
-let counter = 0;
-let actualArr = [].concat(initialArr);
-let Rows = [];
-let turnsArr = [];
-let removed = [];
-let searchMap = [];
+
+let counter = 0,
+    actualArr = [].concat(initialArr),
+    Rows = [],
+    turnsArr = [],
+    removed = [],
+    searchMap = [];
 createNew();
 
 // if(!turns.length) btnBack.setAttribute('disabled', 'disabled');
@@ -95,6 +95,10 @@ function deleteNums(e) {
                 let cell = document.getElementById(item.id);
 
                 cell.classList.add('deleted');
+                Array.from(document.querySelectorAll('.cell')).map(item=>{
+                    if(item.classList.contains('hint')) item.classList.remove('hint')
+                });
+
                 Rows[item.row][item.ind] = 0;
             }
             turnsArr.push(removed);
@@ -143,11 +147,13 @@ function createRows(arr) {
 
 function createSearchMap(arr) {
     let asd = [];
+    let count = 0;
     for(let i = 0; i < arr.length; i++) {
         let row = arr[i];
         for(let j = 0; j < row.length; j++) {
             let id = `${i}.${j}.${row[j]}`;
-            asd.push({id: id, row: i, ind: j, value: row[j]})
+            asd.push({id: id, row: i, ind: j, value: row[j], indx: count})
+            count++;
         }
     }
     return asd;
@@ -178,20 +184,37 @@ function checkEmptyRow(r) {
 }
 
 function getHint() {
-   // let map = createSearchMap(Rows);
-   //
-   // console.log(map);
+    searchMap = createSearchMap(Rows);
+    let
+        map = searchMap,
+        len = searchMap.length;
+    let valid = false;
+    let compare = true;
 
-    let asd = Rows;
+    while (len > 1 && !valid && compare) {
+        let com1 = map.shift();
+        if (com1.value === 0) continue;
 
-    //берем каждую цифру и ищем такую же или в сумме с ней = 10 и проверяем на валидность
-    for(let i = 0; i< Rows.length; i++) {
-        let len = asd[i].length;
-        while(len>0){
-            let [value] = asd[i].splice(0,1);
-            console.log(value);
-            len--;
+        let arr = map.filter(item => (item.value === com1.value || item.value + com1.value === 10));
+        if(arr.length>0){
+            for (let item of arr) {
+                valid = validate([com1, item]);
+
+                if (valid) {
+                    let cell1 = document.getElementById(com1.id),
+                        cell2 = document.getElementById(item.id);
+
+                    [cell1, cell2].map(item => item.classList.add('hint'));
+                    break;
+                }
+            }
         }
+        else {
+            compare = false;
+            alert('Нет совпадений')
+        }
+
+        len--;
     }
 }
 
@@ -205,7 +228,7 @@ function validate(arr) {
 
     // //если цифры одинаковые
     if (firstValue === secondValue || (firstValue + secondValue === 10)) {
-        if(secondInd- firstInd === 1 || (secondInd === firstInd && secondRow - firstRow === 1)) {
+        if((secondInd - firstInd === 1 && secondRow === firstRow) || (secondInd === firstInd && secondRow - firstRow === 1)) {
             valid = true;
         } else {
             let one = searchMap.findIndex(item=>item.id === firstId),
@@ -214,7 +237,7 @@ function validate(arr) {
             let asd = searchMap.some((item, indx)=>
                 indx > one && indx < two && item.value!== 0
             );
-            if(asd) valid = true;
+            if(!asd) valid = true;
         }
     }
 
