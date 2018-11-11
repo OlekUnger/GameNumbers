@@ -1,21 +1,28 @@
+
+
 //с использованием массивов
 
 let field = document.querySelector('.field'),
-    container = document.getElementById('container'),
-    playField = document.getElementById('playField'),
     btnAdd = document.getElementById('btnAdd'),
     btnRestart = document.getElementById('btnRestart'),
     btnBack = document.getElementById('btnBack'),
-    btnHint = document.getElementById('btnHint');
+    btnClose = document.getElementById('btnClose'),
+    btnRefer = document.getElementById('btnRefer'),
+    btnHint = document.getElementById('btnHint'),
+    reference = document.getElementById('reference'),
+    storage = localStorage.getItem('numbers');
+
 
 const initialArr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 1, 1, 2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1, 8, 1, 9];
 
 let counter = 0,
-    actualArr = [].concat(initialArr),
+    actualArr = [],
     Rows = [],
     turnsArr = [],
     removed = [],
     searchMap = [];
+
+
 createNew();
 
 // if(!turns.length) btnBack.setAttribute('disabled', 'disabled');
@@ -33,10 +40,18 @@ btnBack.addEventListener('click', () => {
     stepBack(turnsArr);
 });
 btnHint.addEventListener('click', getHint);
+btnRefer.addEventListener('click', ()=>{
+    reference.classList.remove('hidden');
+});
+btnClose.addEventListener('click', ()=>{
+    reference.classList.add('hidden');
+});
 
 function render(arr) {
+
     Rows = createRows(arr);
     searchMap = createSearchMap(Rows);
+
 
     field.innerHTML = '';
     let fragmentRows = document.createDocumentFragment();
@@ -100,6 +115,10 @@ function deleteNums(e) {
                 });
 
                 Rows[item.row][item.ind] = 0;
+                searchMap = createSearchMap(Rows);
+                setStorage();
+                console.log(storage)
+
             }
             turnsArr.push(removed);
             counter += 1;
@@ -114,6 +133,14 @@ function deleteNums(e) {
                 r.classList.add('hidden');
             }
         }
+
+    }
+
+    if(searchMap.every(item=>item.value === 0)){
+        setTimeout(()=>{
+            alert('Игра окончена');
+        }, 10)
+
     }
 }
 
@@ -173,7 +200,8 @@ function stepBack(arr) {
 }
 
 function createNew() {
-    actualArr = [].concat(initialArr);
+    storage = (!storage) ? [] : JSON.parse(storage);
+    actualArr = (storage.length) ? storage : initialArr;
     render(actualArr);
 }
 
@@ -230,7 +258,15 @@ function validate(arr) {
     if (firstValue === secondValue || (firstValue + secondValue === 10)) {
         if((secondInd - firstInd === 1 && secondRow === firstRow) || (secondInd === firstInd && secondRow - firstRow === 1)) {
             valid = true;
-        } else {
+        }
+        else if(secondRow - firstRow > 1 && firstInd === secondInd){
+            //составим массив из элементов с таким же индексом но в разных строках
+
+            let asd = searchMap.filter(item=>item.row > firstRow && item.row< secondRow && item.ind === firstInd)
+                .every(item=>item.value===0);
+           if(asd) valid = true;
+        }
+        else {
             let one = searchMap.findIndex(item=>item.id === firstId),
                 two = searchMap.findIndex(item=>item.id === secondId);
 
@@ -245,6 +281,12 @@ function validate(arr) {
 
 }
 
-
-
+function setStorage() {
+    storage = [];
+    let arr = [];
+    for(let item of Rows){
+        arr = arr.concat(item);
+    }
+    localStorage.setItem('numbers', JSON.stringify(arr));
+}
 

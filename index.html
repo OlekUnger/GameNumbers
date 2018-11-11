@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>Numbers</title>
 </head>
 <body>
@@ -10,27 +11,65 @@
 
 <div class="wrapper">
 
-<div class="common" >
-    <div class="container">
-        <div class="panel">
-            <button class="btn" id="btnAdd"><img class="icon" src="images/plus.png" /></button>
-            <button class="btn" id="btnRestart"><img class="icon" src="images/refresh-arrow.png" /></button>
-            <button class="btn" id="btnBack" ><img class="icon" src="images/reply.png" /></button>
-            <button class="btn" id="btnHint"><img class="icon" src="images/exclamation.png" /></button>
-            <div style="padding: 0 20px"></div>
-            <button class="btn" id="btnAnswer"><img class="icon" src="images/question-mark.png" /></button>
-        </div>
-        <div id="playField">
-            <div class="field">
+    <div class="common">
+        <div class="container">
+            <div class="panel">
+                <button class="btn" id="btnAdd"><img class="icon" src="images/plus.png"/></button>
+                <button class="btn" id="btnRestart"><img class="icon" src="images/refresh-arrow.png"/></button>
+                <button class="btn" id="btnBack"><img class="icon" src="images/reply.png"/></button>
+                <button class="btn" id="btnHint"><img class="icon" src="images/exclamation.png"/></button>
+                <div style="padding: 0 20px"></div>
+                <button class="btn" id="btnRefer"><img class="icon" src="images/question-mark.png"/></button>
+            </div>
+            <div id="playField">
+                <div class="field">
 
+                </div>
             </div>
         </div>
     </div>
 
-</div>
 
 
+    <div class="reference hidden" id="reference">
+        <span id="btnClose"></span>
+        <h3>Правила игры</h3>
+        <p>Задача - убрать все одинаковые числа или числа, сумма которых равна 10.
+            Например 1 и 1, 2 и 2, 3 и 7, 5 и 5 и т.д
+        </p>
+        <div class="displayInline">
+            <div class="forIcon">
+                <img class="icon" src="images/plus.png" alt="">
+            </div>
+
+            - Если нет вариантов для удаления, добавляет новые числа на игровое поле.
+            Числа включают в себя те, которые не были удалены ранее.
+        </div>
+        <div class="displayInline">
+            <div class="forIcon">
+                <img class="icon" src="images/refresh-arrow.png" alt="">
+            </div>
+
+            - Начать игру заново.
+        </div>
+        <div class="displayInline">
+            <div class="forIcon">
+                <img class="icon" src="images/reply.png" alt="">
+            </div>
+
+            - Отменить ход.
+        </div>
+        <div class="displayInline">
+            <div class="forIcon">
+                <img class="icon" src="images/exclamation.png" alt="">
+            </div>
+
+            - Подсказать возможную комбинацию.
+        </div>
+
+    </div>
 </div>
+
 
 <script src="main.js"></script>
 </body>
