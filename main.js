@@ -117,8 +117,6 @@ function deleteNums(e) {
                 Rows[item.row][item.ind] = 0;
                 searchMap = createSearchMap(Rows);
                 setStorage();
-                console.log(storage)
-
             }
             turnsArr.push(removed);
             counter += 1;
